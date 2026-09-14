@@ -1,0 +1,31 @@
+Mode: Built-in image_gen, two parallel calls.
+
+MAP PROMPT
+Use case: stylized-concept
+Asset type: full-bleed landscape 4:3 map texture for a Korean high-school educational bus-route simulation.
+Primary request: Generate exactly ONE beautiful, detailed, charming semi-realistic 3D miniature/isometric Korean town map. This is ONLY the map artwork, no interface. High camera angle nearly top-down, buildings dimensional, no sky, fills the frame edge to edge. Rich spring greenery, realistic miniature landscaping, gray asphalt streets with ordinary white lane markings, gentle natural daylight, polished game-quality rendering.
+Composition: Treat the image as a normalized map coordinate system x=0..1000 left to right, y=0..760 top to bottom. Place a hilly village of small Korean homes at upper-left centered (170,180); tall white Korean apartment towers lower-left (170,490); a school building and sports field upper center (500,180); a modern low transit transfer terminal center (500,460); a white hospital with green medical cross upper-right (820,260); and a blue-roof factory complex lower-right (860,600). The map must show all six distinct recognizable destinations.
+River: a blue river traverses from left-middle at (0,350) to right-middle at (1000,430), with two gray road bridges near x=420 and x=730.
+Road network, geometrically important: gray winding asphalt connects hill-village gate (220,260) to north junction (410,340) to school gate (510,270). North junction crosses west bridge to terminal entrance (520,480). Apartment gate (230,550) connects to terminal. North junction connects to hospital gate (830,340) along river north bank. Terminal connects to east bridge south landing (710,490), then across river to hospital. Terminal connects to factory gate (860,630). Apartments connect through a small southern neighborhood at (460,650) to factory.
+Materials: tiny dimensional trees and shrubs, spring blossom trees, forested hills near top left, grass lawns, stone river banks, miniature gardens, roofs and windows finely modeled. Roads clearly visible and continuous.
+Constraints: no text of any kind, no labels, no letters, no numbers, no UI, no borders, no route overlays or colored route lines, no buses, no residents, no people, no pins, no icons, no sky. No collage.
+
+RESIDENTS PROMPT
+Use case: stylized-concept
+Asset type: resident portrait sprite sheet for a Korean educational bus simulation.
+Primary request: Generate exactly ONE sheet of 12 distinct friendly Korean residents, precisely four columns by three rows in reading order, with 12 identical square cells arranged as a landscape 4:3 rectangle. These are polished semi-realistic 3D illustrated character portraits, warm expressive faces, beautifully modeled clothing, soft natural studio lighting, consistent art style. Each portrait centered in its cell, no shared figures across cells. Background is uniform extremely pale blue throughout, no outlines or dividers, no text.
+Reading order:
+Row 1 col 1: Korean teenage girl with long black hair, navy school uniform, white shirt, navy tie, friendly.
+Row 1 col 2: Korean adult male factory worker, blue work shirt and blue cap, friendly.
+Row 1 col 3: Korean adult woman with dark bob haircut, pink shirt, seated in a clearly visible wheelchair with wheels and armrests; torso and chair visible.
+Row 1 col 4: Korean elderly woman, short gray hair, lavender cardigan, holding walking cane visible in lower portrait.
+Row 2 col 1: Korean teenage boy wearing glasses and a navy school uniform.
+Row 2 col 2: Korean young adult woman in teal hospital scrubs, short tied-back hair.
+Row 2 col 3: Korean adult man in office jacket and light shirt, neat hair.
+Row 2 col 4: Korean elderly man, beige cardigan, gray hair, holding walking cane visible below.
+Row 3 col 1: Korean young mother with medium-length dark hair, green cardigan.
+Row 3 col 2: Korean adult male factory worker, orange safety vest over work shirt.
+Row 3 col 3: Korean teenage girl with short black hair, navy school uniform.
+Row 3 col 4: Korean adult man wearing glasses and seated in clearly visible wheelchair, torso, wheels and armrests visible.
+Composition: uniform cell dimensions, equal head sizes, shoulders/upper body framed fully within cell; seated wheelchair figures show enough chair to be recognizable within their own cell. Preserve space between characters. All 12 distinct and human, elegant approachable 3D animated-film quality.
+Avoid: text, labels, numbers, borders, grids, watermarks, logos, backdrop scenes, overlapping characters, extra people.
