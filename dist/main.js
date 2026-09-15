@@ -14,7 +14,20 @@ function notice(text,type=''){return `<p class="portal-notice ${type}">${esc(tex
 function setNotice(text,type=''){const el=document.querySelector('#portal-notice');if(el){el.className=`portal-notice ${type}`;el.textContent=text;}}
 function bindCommon(){document.querySelectorAll('[data-nav]').forEach(el=>el.addEventListener('click',()=>{location.hash=el.dataset.nav;}));}
 
-function renderLanding(){dispose();clearInterval(dashboardTimer);shell(`<main class="portal-page minimal-entry"><section class="entry-stage"><div class="entry-map" aria-hidden="true"><img src="./assets/town-map.png" alt=""><span class="portal-pin p1">언덕마을</span><span class="portal-pin p2">환승센터</span><span class="portal-pin p3">병원</span></div><header class="entry-title"><h1>이 버스는 누구를 지나치는가</h1><p>고등학교 통합사회 · 노선 설계 활동</p></header><section class="entry-launch" aria-label="교사용 세션 만들기"><button class="portal-primary" id="create-class">새 수업 만들기</button><p id="portal-notice" class="portal-notice" role="status"></p></section></section></main>`,'portal-mode');
+function renderLanding(){dispose();clearInterval(dashboardTimer);shell(`<main class="welcome-page">
+ <section class="welcome" aria-labelledby="welcome-title">
+  <div class="welcome-copy">
+   <p class="welcome-subject"><svg viewBox="0 0 32 40" aria-hidden="true"><rect x="3" y="1" width="26" height="34" rx="7" fill="currentColor"/><rect x="7" y="9" width="18" height="13" rx="2" fill="white"/><path d="M11 5h10" stroke="white" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="28" r="2" fill="white"/><circle cx="23" cy="28" r="2" fill="white"/><path d="M7 33v4m18-4v4" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg><span>고등학교 통합사회</span></p>
+   <div class="welcome-heading"><p class="welcome-eyebrow">노선 설계 활동</p><h1 id="welcome-title">이 버스는<br>누구를<br><span>지나치는가</span></h1></div>
+   <div class="welcome-launch"><button id="create-class" class="welcome-start"><span>새 수업 만들기</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button><p id="portal-notice" class="portal-notice" role="status"></p></div>
+   <svg class="welcome-tracks" viewBox="0 0 550 210" fill="none" aria-hidden="true"><path d="M-30 170h235c85 0 55-120 145-120h240" stroke="#1762ee"/><path d="M-30 195h244c87 0 66-120 144-120h220" stroke="#f79443"/><circle cx="132" cy="170" r="8"/><circle cx="443" cy="50" r="8"/></svg>
+  </div>
+  <div class="welcome-city" role="img" aria-label="강과 다리로 연결된 언덕마을, 아파트, 학교, 환승센터, 병원과 공장 지도">
+   <img src="./assets/town-map.png" alt="" fetchpriority="high">
+   <span class="welcome-place hill">언덕마을<i></i></span><span class="welcome-place school">학교<i></i></span><span class="welcome-place hospital">병원<i></i></span><span class="welcome-place apartments">아파트<i></i></span><span class="welcome-place center">환승센터<i></i></span><span class="welcome-place factory">공장<i></i></span>
+   <div class="welcome-map-caption" aria-hidden="true"><span class="welcome-route blue">1호차</span><span class="welcome-route orange">2호차</span><span>우리 모둠이 연결할 마을</span></div>
+  </div>
+ </section></main>`,'portal-mode');
  $('#create-class').addEventListener('click',async()=>{if(busy)return;busy=true;const b=$('#create-class');b.disabled=true;b.textContent='수업 여는 중…';try{const klass=await createClass();sessionStorage.setItem('bus-auto-qr',klass.code);location.hash=`teacher/${klass.code}`;}catch(e){setNotice(firebaseMessage(e),'error');b.disabled=false;b.textContent='새 수업 만들기';busy=false;}});
 }
 const $=s=>document.querySelector(s);
