@@ -1,4 +1,2 @@
-.sites-runtime/
-node_modules/
-artifacts/
-*.zip
+tmp/
+artwork-generated/*.png
