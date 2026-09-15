@@ -22,9 +22,9 @@ function renderLanding(){dispose();clearInterval(dashboardTimer);shell(`<main cl
    <div class="welcome-launch"><button id="create-class" class="welcome-start"><span>새 수업 만들기</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button><p id="portal-notice" class="portal-notice" role="status"></p></div>
    <svg class="welcome-tracks" viewBox="0 0 550 210" fill="none" aria-hidden="true"><path d="M-30 170h235c85 0 55-120 145-120h240" stroke="#1762ee"/><path d="M-30 195h244c87 0 66-120 144-120h220" stroke="#f79443"/><circle cx="132" cy="170" r="8"/><circle cx="443" cy="50" r="8"/></svg>
   </div>
-  <div class="welcome-city" role="img" aria-label="강과 다리로 연결된 언덕마을, 아파트, 학교, 환승센터, 병원과 공장 지도">
+  <div class="welcome-city" role="img" aria-label="강과 다리로 연결된 언덕마을, 아파트, 학교, 마을 버스터미널, 병원과 공장 지도">
    <img src="./assets/town-map.png" alt="" fetchpriority="high">
-   <span class="welcome-place hill">언덕마을<i></i></span><span class="welcome-place school">학교<i></i></span><span class="welcome-place hospital">병원<i></i></span><span class="welcome-place apartments">아파트<i></i></span><span class="welcome-place center">환승센터<i></i></span><span class="welcome-place factory">공장<i></i></span>
+   <span class="welcome-place hill">언덕마을<i></i></span><span class="welcome-place school">학교<i></i></span><span class="welcome-place hospital">병원<i></i></span><span class="welcome-place apartments">아파트<i></i></span><span class="welcome-place center">마을 버스터미널<i></i></span><span class="welcome-place factory">공장<i></i></span>
    <div class="welcome-map-caption" aria-hidden="true"><span class="welcome-route blue">1호차</span><span class="welcome-route orange">2호차</span><span>우리 모둠이 연결할 마을</span></div>
   </div>
  </section></main>`,'portal-mode');

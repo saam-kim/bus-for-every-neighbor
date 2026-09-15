@@ -4,11 +4,11 @@ export const STOPS=[
  {id:'H',name:'언덕마을',x:253,y:217,zone:'언덕마을'},
  {id:'A',name:'아파트',x:231,y:527,zone:'아파트'},
  {id:'S',name:'학교',x:490,y:203,zone:'학교'},
- {id:'T',name:'환승센터',x:502,y:471,zone:'환승센터'},
+ {id:'T',name:'마을 버스터미널',x:502,y:471,zone:'마을 버스터미널'},
  {id:'M',name:'병원',x:816,y:255,zone:'병원'},
  {id:'F',name:'공장',x:864,y:674,zone:'공장'},
- {id:'N',name:'다리 북단',x:397,y:252,zone:'환승센터'},
- {id:'E',name:'다리 남단',x:716,y:397,zone:'환승센터'}
+ {id:'N',name:'다리 북단',x:397,y:252,zone:'마을 버스터미널'},
+ {id:'E',name:'다리 남단',x:716,y:397,zone:'마을 버스터미널'}
 ];
 export const STOP=Object.fromEntries(STOPS.map(s=>[s.id,s]));
 // Road junctions are routing points, not selectable stops or boarding locations.
@@ -35,7 +35,7 @@ export const RESIDENTS=[
  {id:'bokrye',name:'복례',role:'병원에 가는 주민',portrait:3,home:'언덕마을',destination:'병원',ready:440,deadline:510,walk:'지팡이 사용 · 한 번에 8분',maxWalk:8,low:false,access:{H:8},egress:{M:7},story:'8시 30분 검사를 예약했어요. 지팡이를 사용해서 멀리 있는 정류장까지 걷기는 어려워요.'},
  {id:'dohyun',name:'도현',role:'고등학생',portrait:4,home:'아파트',destination:'학교',ready:435,deadline:500,walk:'한 번에 15분까지 보행',maxWalk:15,low:false,access:{A:3,T:14},egress:{S:4},story:'7시 15분부터 출발할 수 있어요. 같은 반 민서와 8시 20분까지 등교해야 해요.'},
  {id:'eunseo',name:'은서',role:'병원 근로자',portrait:5,home:'아파트',destination:'병원',ready:425,deadline:480,walk:'한 번에 15분까지 보행',maxWalk:15,low:false,access:{A:4,T:14},egress:{M:3},story:'8시부터 병동 근무를 시작해요. 이른 아침에 나갈 수 있지만 버스의 첫 출발 시각이 중요해요.'},
- {id:'haneul',name:'하늘',role:'유아 동반 근로자',portrait:8,home:'아파트',destination:'환승센터',ready:460,deadline:505,walk:'유아차 이동 · 한 번에 8분',maxWalk:8,low:true,access:{A:6},egress:{T:4},story:'유아차를 접기 어려워 저상버스를 이용해요. 환승센터 직장 어린이집에 들러 8시 25분 근무를 시작해요.'},
+ {id:'haneul',name:'하늘',role:'유아 동반 근로자',portrait:8,home:'아파트',destination:'마을 버스터미널',ready:460,deadline:505,walk:'유아차 이동 · 한 번에 8분',maxWalk:8,low:true,access:{A:6},egress:{T:4},story:'유아차를 접기 어려워 저상버스를 이용해요. 마을 버스터미널 직장 어린이집에 들러 8시 25분 근무를 시작해요.'},
  {id:'geonu',name:'건우',role:'휠체어 이용 근로자',portrait:11,home:'아파트',destination:'공장',ready:450,deadline:515,walk:'평탄한 접근로로 5분 이동',maxWalk:5,low:true,access:{A:5},egress:{F:5},story:'8시 35분 사무실 회의가 있어요. 환승한다면 두 버스가 모두 저상이어야 하므로 지금은 한 대로 가야 해요.'}
 ];
 export const DEFAULT_DESIGN={buses:[{route:['A','T'],departure:450},{route:['H','N'],departure:450}],lowBus:0};
