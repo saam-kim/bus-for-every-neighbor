@@ -14,6 +14,7 @@
 .qr-modal{width:min(560px,100%);padding:27px 34px 30px}
 .qr-modal>img{width:330px;height:330px;background:#fff}
 .access-address{margin-top:12px;padding:12px 14px;border:1px solid #d8e4f4;border-radius:10px;background:#f7faff;text-align:left}
+.qr-modal>h2{margin-top:5px}
 .access-address small{display:block;color:#5c7191;font-size:11px;font-weight:800;margin-bottom:6px}
 .access-address strong{display:block;color:#163e79;font-size:12px;line-height:1.5;overflow-wrap:anywhere;user-select:all}
 .copy-address{width:100%;min-height:44px;margin-top:9px;border:0;border-radius:9px;background:#174b95;color:#fff;font-weight:850}
