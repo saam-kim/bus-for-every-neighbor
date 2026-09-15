@@ -27,3 +27,20 @@
  .map-panel:not(.editing-order) .route-editor{height:188px;max-height:188px;overflow:hidden}.route-list{scrollbar-width:none}.route-list::-webkit-scrollbar{display:none}.route-chip{min-height:40px}.route-chip button{min-width:32px;min-height:32px}.editor-heading .undo{min-height:38px}.editor-controls input,.editor-controls select,.add-stop{min-height:42px}
  .sidebar-head{padding:15px 14px 10px}.result-counts{margin-top:9px}.resident-list{padding:0 11px 10px}.resident-card{grid-template-columns:60px 1fr;padding:9px;gap:9px;margin-bottom:8px;min-height:108px}.resident-card .portrait{width:60px;height:84px}.resident-name{margin:1px 0 5px}.resident-deadline{margin-bottom:6px}.status{padding:6px 7px}.resident-origin{margin-top:5px}.sidebar-note{padding:10px;margin:0 11px 11px;line-height:1.5}
 }
+
+.editor-collapse{border:1px solid #cddbed;background:#f7faff;color:#24549a;border-radius:8px;padding:6px 9px;font-size:12px;font-weight:800;white-space:nowrap}
+.map-panel.editor-collapsed .route-editor{height:54px!important;max-height:54px!important;overflow:hidden}
+.map-panel.editor-collapsed .editor-heading{margin-bottom:0}
+.map-panel.editor-collapsed .route-list,.map-panel.editor-collapsed .route-tools,.map-panel.editor-collapsed .editor-controls,.map-panel.editor-collapsed .editor-meta{display:none}
+
+@media (min-width:901px) and (max-width:1200px),(min-width:901px) and (max-height:900px){
+ .map-scene{bottom:164px}
+ .route-editor,.map-panel:not(.editing-order) .route-editor{left:0;bottom:0;width:100%;height:164px;max-height:164px;border:0;border-top:1px solid #d5e2ef;border-radius:0;padding:9px 13px;box-shadow:0 -3px 14px #15354d10;overflow:hidden}
+ .map-panel.editing-order .map-scene{bottom:204px}
+ .map-panel.editing-order .route-editor{left:0;bottom:0;width:100%;height:204px;max-height:204px;border-radius:0}
+ .map-panel.editor-collapsed .map-scene{bottom:54px}
+ .map-panel.editor-collapsed .route-editor{left:0;bottom:0;width:100%}
+ .route-editor .editor-heading{margin-bottom:4px}
+ .route-editor .undo{margin-left:auto}
+ .map-hint{bottom:175px}
+}
