@@ -63,7 +63,8 @@ check('arriving one minute after departure requires the next visit',()=>{
  const p={id:'test',portrait:0,ready:448,deadline:600,maxWalk:10,low:false,access:{A:3},egress:{S:1}};
  const r=resultFor(p,d,evaluate(d).schedules);
  assert.ok(r.rides[0].board>450);
- assert.equal(r.rides[0].board,504);
+ // A → junction → N → S takes 20 minutes; round trip is 46 minutes.
+ assert.equal(r.rides[0].board,496);
 });
 
 check('transfer needs two full minutes and an exact connection is allowed',()=>{
@@ -118,6 +119,28 @@ check('invalid count, time, duplicate and wrong origin are rejected',()=>{
  const timeBad=copy(DEFAULT_DESIGN);timeBad.buses[0].departure=400;assert.equal(validateDesign(timeBad),false);
  const duplicate=copy(DEFAULT_DESIGN);duplicate.buses[0].route=['A','T','A'];assert.equal(validateDesign(duplicate),false);
  const origin=copy(DEFAULT_DESIGN);origin.buses[1].route=['N','H'];assert.equal(validateDesign(origin),false);
+});
+
+check('the bridge junction connects apartments without a transfer-center detour',()=>{
+ const direct=roadPath('N','A');
+ assert.equal(direct.minutes,13);
+ assert.deepEqual(direct.edges.map(e=>[e.from,e.to]),[['N','J'],['J','A']]);
+ assert.ok(!direct.points.some(([x,y])=>x===STOP.T.x&&y===STOP.T.y));
+ assert.equal(roadPath('N','T').minutes,8);
+ assert.equal(roadPath('A','T').minutes,9);
+ const bus=scheduleBus({route:['H','N','A'],departure:450},1);
+ assert.deepEqual(bus.visits.slice(0,3).map(v=>[v.stop,v.arr,v.dep]),[
+  ['H',449,450],['N',464,465],['A',478,481]
+ ]);
+ assert.ok(bus.visits.every(v=>v.stop!=='T'&&v.stop!=='J'));
+ const viaCenter=scheduleBus({route:['H','N','T','A'],departure:450},1);
+ assert.equal(viaCenter.visits[3].arr,483);
+ const invalid=copy(DEFAULT_DESIGN);invalid.buses[1].route.push('J');
+ assert.equal(validateDesign(invalid),false);
+ // Passing through a stop's road point never makes it a boarding location.
+ const pass=scheduleBus({route:['H','A'],departure:450},1);
+ assert.ok(pass.segments.some(s=>s.to==='N'));
+ assert.ok(pass.visits.every(v=>v.stop!=='N'));
 });
 
 check('shortest road paths use connected endpoints and edge totals',()=>{

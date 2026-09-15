@@ -1,9 +1,9 @@
-import {SCENARIO,STOPS,STOP,ROADS,RESIDENTS,BUS_STARTS} from './data.js';
+import {SCENARIO,STOPS,STOP,ROADS,ROAD_NODES,RESIDENTS,BUS_STARTS} from './data.js';
 export const time=t=>t==null?'—':`${String(Math.floor(t/60)).padStart(2,'0')}:${String(Math.floor(t%60)).padStart(2,'0')}`;
 const cache=new Map();
 export function roadPath(from,to){
  const key=from+'-'+to;if(cache.has(key))return cache.get(key);
- const distance=Object.fromEntries(STOPS.map(s=>[s.id,Infinity])),prev={};distance[from]=0;const todo=new Set(STOPS.map(s=>s.id));
+ const distance=Object.fromEntries(ROAD_NODES.map(s=>[s.id,Infinity])),prev={};distance[from]=0;const todo=new Set(ROAD_NODES.map(s=>s.id));
  while(todo.size){const u=[...todo].sort((a,b)=>distance[a]-distance[b]||a.localeCompare(b))[0];todo.delete(u);if(u===to)break;
   ROADS.forEach((r,i)=>{const v=r.a===u?r.b:r.b===u?r.a:null;if(v&&todo.has(v)&&distance[u]+r.minutes<distance[v]){distance[v]=distance[u]+r.minutes;prev[v]={u,i};}});
  }

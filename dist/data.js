@@ -1,5 +1,5 @@
 // 교육용 가상 자료. 시각은 자정부터의 분, 도로 시간과 보행 시간은 분 단위.
-export const SCENARIO={id:'morning-v2',start:420,end:600,dwell:1,turn:2,transfer:2};
+export const SCENARIO={id:'morning-v3',start:420,end:600,dwell:1,turn:2,transfer:2};
 export const STOPS=[
  {id:'H',name:'언덕마을',x:253,y:217,zone:'언덕마을'},
  {id:'A',name:'아파트',x:231,y:527,zone:'아파트'},
@@ -11,13 +11,17 @@ export const STOPS=[
  {id:'E',name:'다리 남단',x:716,y:397,zone:'환승센터'}
 ];
 export const STOP=Object.fromEntries(STOPS.map(s=>[s.id,s]));
+// Road junctions are routing points, not selectable stops or boarding locations.
+export const ROAD_NODES=[...STOPS,{id:'J',name:'다리 아래 갈림길',x:389,y:463}];
+export const ROAD_NODE=Object.fromEntries(ROAD_NODES.map(n=>[n.id,n]));
 // 학생이 빈 화면에서 시작하지 않도록 두 차량의 기점을 고정한다.
 export const BUS_STARTS=['A','H'];
 export const ROADS=[
  {a:'H',b:'N',minutes:14,points:[[253,217],[278,225],[303,239],[345,247],[397,252]]},
  {a:'N',b:'S',minutes:7,points:[[397,252],[424,246],[470,225],[490,217],[490,203]]},
- {a:'N',b:'T',minutes:8,points:[[397,252],[402,276],[411,320],[420,365],[412,386],[397,421],[391,452],[450,469],[502,471]]},
- {a:'A',b:'T',minutes:9,points:[[231,527],[270,519],[330,493],[389,463],[440,466],[502,471]]},
+ {a:'N',b:'J',minutes:6,points:[[397,252],[402,276],[411,320],[420,365],[412,386],[397,421],[391,452],[389,463]]},
+ {a:'A',b:'J',minutes:7,points:[[231,527],[270,519],[330,493],[389,463]]},
+ {a:'J',b:'T',minutes:2,points:[[389,463],[440,466],[450,469],[502,471]]},
  {a:'N',b:'M',minutes:12,points:[[397,252],[424,246],[470,225],[530,231],[610,251],[679,260],[760,276],[797,274],[816,255]]},
  {a:'T',b:'E',minutes:6,points:[[502,471],[544,480],[578,495],[606,478],[655,437],[700,410],[716,397]]},
  {a:'E',b:'M',minutes:10,points:[[716,397],[728,365],[747,317],[760,286],[797,274],[816,255]]},
