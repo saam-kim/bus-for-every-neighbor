@@ -4,3 +4,4 @@ artwork-generated/*.png
 artifacts/*.tar.gz
 
 .vercel
+.env*
