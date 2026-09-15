@@ -1,4 +1,4 @@
-import {SCENARIO,STOPS,STOP,ROADS,RESIDENTS} from './data.js';
+import {SCENARIO,STOPS,STOP,ROADS,RESIDENTS,BUS_STARTS} from './data.js';
 export const time=t=>t==null?'—':`${String(Math.floor(t/60)).padStart(2,'0')}:${String(Math.floor(t%60)).padStart(2,'0')}`;
 const cache=new Map();
 export function roadPath(from,to){
@@ -12,7 +12,7 @@ export function roadPath(from,to){
 }
 export function validateDesign(d){
  if(!d||![0,1].includes(d.lowBus)||!Array.isArray(d.buses)||d.buses.length!==2)return false;
- return d.buses.every(b=>Number.isInteger(b.departure)&&b.departure>=420&&b.departure<=599&&Array.isArray(b.route)&&b.route.length<=8&&new Set(b.route).size===b.route.length&&b.route.every(id=>STOP[id]));
+ return d.buses.every((b,i)=>Number.isInteger(b.departure)&&b.departure>=420&&b.departure<=599&&Array.isArray(b.route)&&b.route.length>=1&&b.route.length<=8&&b.route[0]===BUS_STARTS[i]&&new Set(b.route).size===b.route.length&&b.route.every(id=>STOP[id]));
 }
 export function scheduleBus(bus,busId,end=SCENARIO.end){
  const route=bus.route;if(route.length<2)return {busId,route,cycle:0,visits:[],segments:[],departures:[]};
