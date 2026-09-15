@@ -2,3 +2,5 @@ tmp/
 artwork-generated/*.png
 .openai/*.tar.gz
 artifacts/*.tar.gz
+
+.vercel
