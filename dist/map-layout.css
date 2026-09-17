@@ -40,6 +40,9 @@
 .proportionate-map .simulation-note{margin-top:18px;line-height:1.8}
 .proportionate-map .live-state{right:12px;bottom:12px}
 .proportionate-map .stop-label{pointer-events:auto;min-height:36px;display:flex;align-items:center;justify-content:center}
+.proportionate-map .stop.insertion-point .stop-dot{outline:3px solid #153b70;outline-offset:4px}
+.insertion-guide{display:flex;flex-direction:column;gap:5px;background:#eef5ff;border:1px solid #d8e6fb;border-radius:9px;padding:11px 12px;margin:0 0 14px;line-height:1.6;font-size:12px;color:#315378}
+.insertion-guide b{font-size:14px;color:#174a97}.insertion-guide button{min-height:44px;margin-top:3px;border:1px solid #c9daf4;border-radius:7px;background:#fff;color:#1857ad;font-size:12px}
 .modal:has(.attempt-select) .modal-actions{position:sticky;bottom:0;background:#fff;padding:12px 0;border-top:1px solid #e0e8f2;z-index:2;flex-wrap:wrap}
 @media(min-width:901px){
  .workspace:has(.proportionate-map){height:calc(100dvh - 154px)}

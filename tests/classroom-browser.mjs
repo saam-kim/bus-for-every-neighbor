@@ -33,6 +33,32 @@ try{
  await student.locator('.classroom-lock').waitFor();
  await teacher.waitForFunction(()=>document.querySelector('.team-row:not(.header)')?.textContent.includes('아직 운행 전'));
  await teacher.locator('[data-action=start]').click();await student.locator('.modal .primary[data-action=close]').click();
+ if(process.env.ROUTE_EDIT_ONLY==='1'){
+  const stop=id=>student.locator(`.stop[data-id=${id}] .stop-label`).click();
+  const route=i=>student.evaluate(i=>JSON.parse(localStorage.getItem(window.BUS_CLASSROOM.storageKey)).design.buses[i].route,i);
+  for(const id of ['E','M','S','H','N'])await stop(id);
+  await stop('E');
+  assert.match(await student.locator('.insertion-guide').innerText(),/다리 남단 뒤에 추가/);
+  await student.locator('[data-action=add-stop]').click();
+  await stop('F');
+  assert.deepEqual(await route(0),['A','T','E','F','M','S','H','N']);
+  assert.equal(await student.locator('.stop[data-id=F] .stop-dot').innerText(),'4');
+  await student.screenshot({path:path.join(artifacts,'insert-after-south.png')});
+  await student.locator('[data-action=undo]').click();
+  assert.deepEqual(await route(0),['A','T','E','M','S','H','N']);
+  await stop('E');await stop('F');
+  await student.locator('[data-action=bus][data-id="1"]').click();
+  await student.locator('.route-chip[data-index="0"]').press('Enter');
+  await stop('S');await stop('E');
+  assert.deepEqual(await route(1),['H','S','E','N']);
+  await student.locator('[data-action=append-end]').click();await stop('F');
+  assert.deepEqual(await route(1),['H','S','E','N','F']);
+  await student.reload();await student.locator('.route-editor').waitFor();
+  assert.deepEqual(await route(0),['A','T','E','F','M','S','H','N']);
+  assert.deepEqual(await route(1),['H','S','E','N','F']);
+  assert.deepEqual(errors,[]);
+  console.log('PASS south → factory insertion via add button; undo; fixed origin; consecutive insertion; bus switch; append at end; reload');
+ }else{
  await student.locator('.stop[data-id=S] .stop-label').click();
  assert.match(await student.locator('.route-list').innerText(),/학교/);
  const layout=await student.evaluate(()=>{const m=document.querySelector('.map-scene').getBoundingClientRect(),f=document.querySelector('.bottom-bar .primary').getBoundingClientRect();return {ratio:m.width/m.height,buttonBottom:f.bottom,height:innerHeight,scrollWidth:document.documentElement.scrollWidth,width:innerWidth};});
@@ -72,5 +98,6 @@ try{
  assert.deepEqual(errors,[]);
  console.log('PASS code entry; touch labels; 1194×834 layout; live student sync; teacher draft; pause/resume; both result buttons; reflections; comparison; reload; 1024px stages');
  console.log(JSON.stringify({layout,screenshots:artifacts},null,2));
+ }
 }finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
 
