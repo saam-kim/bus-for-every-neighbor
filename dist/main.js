@@ -1,5 +1,5 @@
 import {completedProgress,createSyncQueue} from './classroom-sync.js';
-import {LESSON,RESIDENTS,STOP,BUS_STARTS} from './data.js';
+import {SCENARIO,LESSON,RESIDENTS,STOP,BUS_STARTS} from './data.js';
 import {evaluate,summary,time} from './engine.js';
 import {connectBackend,createClass,readClass,watchClass,updateControl,joinClass,updateTeam,backendMode} from './classroom.js';
 
@@ -76,7 +76,7 @@ function resultLabel(r){return !r||r.arrival==null?'이동 불가':`${time(r.arr
 function teacherChange(first,last){if(first.arrival==null)return last.arrival==null?'여전히 이동 불가':'새롭게 이동 가능';if(last.arrival==null)return '이동 가능 → 불가';const diff=last.duration-first.duration;return diff>0?`${diff}분 더 걸림`:diff<0?`${-diff}분 줄어듦`:'이동 시간 같음';}
 function teamModal(k,id){
  const t=k.teams?.[id];if(!t)return '';
- const p=teamProgress(t),attempts=t.studentState?.attempts||[],first=attempts[0],last=attempts.at(-1),answers=t.studentState?.reflections||[];
+ const p=teamProgress(t),attempts=(t.studentState?.attempts||[]).filter(a=>a.scenario===SCENARIO.id),first=attempts[0],last=attempts.at(-1),answers=t.studentState?.scenario===SCENARIO.id?t.studentState.reflections||[]:[];
  return `<div class="portal-modal-shade"><section class="team-modal" role="dialog" aria-modal="true" aria-labelledby="team-title"><button class="modal-x" data-action="close-modal" aria-label="닫기">×</button><p class="portal-kicker">모둠 상세</p><h2 id="team-title">${esc(t.name)}</h2><div class="team-metrics"><span>시도 <b>${p.attempts}회</b></span><span>성찰 <b>${p.reflectionDone}/3</b></span></div>
  ${last?`<h3>${attempts.length>1?'첫 시도와 최근 시도 비교':'첫 운행 결과'}</h3><div class="table-wrap"><table class="teacher-comparison"><thead><tr><th>주민</th>${attempts.length>1?'<th>첫 시도</th>':''}<th>최근 결과</th>${attempts.length>1?'<th>변화</th>':''}</tr></thead><tbody>${RESIDENTS.map((person,i)=>`<tr><th>${person.name}</th>${attempts.length>1?`<td>${resultLabel(first.results[i])}</td>`:''}<td>${resultLabel(last.results[i])}</td>${attempts.length>1?`<td>${teacherChange(first.results[i],last.results[i])}</td>`:''}</tr>`).join('')}</tbody></table></div>`: '<p class="side-empty">아직 저장된 운행 결과가 없습니다.</p>'}
  <section class="teacher-reflections"><h3>모둠의 생각</h3>${['우리의 선택으로 이동이 가능해진 사람은 누구인가?','그 대신 누가 더 기다리거나 돌아가게 되었는가?','정류장이 있다는 것과 실제로 목적지에 갈 수 있다는 것은 어떻게 다른가?'].map((q,i)=>`<article><h4>${i+1}. ${q}</h4><p>${esc(answers[i]?.trim()||'아직 작성하지 않았습니다.')}</p></article>`).join('')}</section><button class="portal-primary modal-done" data-action="close-modal">확인</button></section></div>`;

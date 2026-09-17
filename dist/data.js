@@ -1,5 +1,5 @@
 // 교육용 가상 자료. 시각은 자정부터의 분, 도로 시간과 보행 시간은 분 단위.
-export const SCENARIO={id:'morning-v3',start:420,end:600,dwell:1,turn:2,transfer:2};
+export const SCENARIO={id:'morning-v4',start:420,end:600,dwell:1,turn:2,transfer:2};
 export const STOPS=[
  {id:'H',name:'언덕마을',x:253,y:217,zone:'언덕마을'},
  {id:'A',name:'아파트',x:231,y:527,zone:'아파트'},
@@ -12,20 +12,30 @@ export const STOPS=[
 ];
 export const STOP=Object.fromEntries(STOPS.map(s=>[s.id,s]));
 // Road junctions are routing points, not selectable stops or boarding locations.
-export const ROAD_NODES=[...STOPS,{id:'J',name:'다리 아래 갈림길',x:389,y:463}];
+export const ROAD_NODES=[...STOPS,
+ {id:'J',name:'다리 아래 갈림길',x:389,y:463},
+ {id:'K',name:'학교 앞 갈림길',x:470,y:225},
+ {id:'L',name:'병원 앞 갈림길',x:797,y:274},
+ {id:'Q',name:'공장 앞 갈림길',x:605,y:497}
+];
 export const ROAD_NODE=Object.fromEntries(ROAD_NODES.map(n=>[n.id,n]));
 // 학생이 빈 화면에서 시작하지 않도록 두 차량의 기점을 고정한다.
 export const BUS_STARTS=['A','H'];
 export const ROADS=[
  {a:'H',b:'N',minutes:14,points:[[253,217],[278,225],[303,239],[345,247],[397,252]]},
- {a:'N',b:'S',minutes:7,points:[[397,252],[424,246],[470,225],[490,217],[490,203]]},
+ {a:'N',b:'K',minutes:5,points:[[397,252],[424,246],[470,225]]},
+ {a:'K',b:'S',minutes:2,points:[[470,225],[490,217],[490,203]]},
  {a:'N',b:'J',minutes:6,points:[[397,252],[402,276],[411,320],[420,365],[412,386],[397,421],[391,452],[389,463]]},
  {a:'A',b:'J',minutes:7,points:[[231,527],[270,519],[330,493],[389,463]]},
  {a:'J',b:'T',minutes:2,points:[[389,463],[440,466],[450,469],[502,471]]},
- {a:'N',b:'M',minutes:12,points:[[397,252],[424,246],[470,225],[530,231],[610,251],[679,260],[760,276],[797,274],[816,255]]},
- {a:'T',b:'E',minutes:6,points:[[502,471],[544,480],[578,495],[606,478],[655,437],[700,410],[716,397]]},
- {a:'E',b:'M',minutes:10,points:[[716,397],[728,365],[747,317],[760,286],[797,274],[816,255]]},
- {a:'E',b:'F',minutes:9,points:[[716,397],[680,430],[635,465],[605,497],[637,525],[710,560],[800,620],[864,674]]},
+ // Split shared roads at real junctions so buses need not visit a stop to turn.
+ // Existing N–S 7, N–M 12, T–E 6, E–M 10 and E–F 9 minute totals remain.
+ {a:'K',b:'L',minutes:6,points:[[470,225],[530,231],[610,251],[679,260],[760,276],[797,274]]},
+ {a:'L',b:'M',minutes:1,points:[[797,274],[816,255]]},
+ {a:'T',b:'Q',minutes:2,points:[[502,471],[544,480],[578,495],[605,497]]},
+ {a:'Q',b:'E',minutes:4,points:[[605,497],[635,465],[680,430],[716,397]]},
+ {a:'E',b:'L',minutes:9,points:[[716,397],[728,365],[747,317],[760,286],[797,274]]},
+ {a:'Q',b:'F',minutes:5,points:[[605,497],[637,525],[710,560],[800,620],[864,674]]},
  {a:'A',b:'F',minutes:23,points:[[231,527],[286,566],[357,583],[455,613],[575,650],[693,682],[780,663],[864,674]]}
 ];
 export const RESIDENTS=[

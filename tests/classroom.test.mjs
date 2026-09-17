@@ -5,10 +5,10 @@ import * as data from '../dist/data.js';
 import * as engine from '../dist/engine.js';
 import {completedProgress,createSyncQueue} from '../dist/classroom-sync.js';
 
-const state={design:structuredClone(data.DEFAULT_DESIGN),attempts:[],reflections:['  ','','']};
+const state={scenario:data.SCENARIO.id,design:structuredClone(data.DEFAULT_DESIGN),attempts:[],reflections:['  ','','']};
 assert.equal(completedProgress(state,'design').results,null);
 assert.equal(completedProgress(state,'reflection').reflectionDone,0);
-const first={design:structuredClone(state.design),results:engine.evaluate(state.design).results};
+const first={scenario:data.SCENARIO.id,design:structuredClone(state.design),results:engine.evaluate(state.design).results};
 state.attempts.push(first);
 state.design.buses[0].departure+=30;
 assert.deepEqual(completedProgress(state,'design').results,first.results);
@@ -52,3 +52,42 @@ run("action('redesign');action('run');playTime=600;updateAnimation();");
 assert.equal(run('state.attempts.length'),2);
 run=harness();assert.equal(run('state.attempts.length'),2);
 console.log('PASS both result buttons, automatic completion, and reload preserve attempts without duplicates');
+
+// Test each insertion position and missing stop, for every ordered three-stop
+// route on both buses (1,260 distinct route-editing situations).
+run("mode='design';modal=null;render=()=>{};");
+let insertions=0;
+for(let bus=0;bus<2;bus++){
+ const origin=data.BUS_STARTS[bus],others=data.STOPS.map(s=>s.id).filter(id=>id!==origin);
+ for(const x of others)for(const y of others){if(x===y)continue;
+  const route=[origin,x,y];
+  for(let anchor=0;anchor<route.length;anchor++)for(const id of others.filter(id=>!route.includes(id))){
+   const design=structuredClone(data.DEFAULT_DESIGN);design.buses[bus].route=route;
+   run(`state.design=${JSON.stringify(design)};selectedBus=${bus};selectedChip=${anchor};action('stop',{id:'${id}'});`);
+   const expected=[...route];expected.splice(anchor+1,0,id);
+   assert.deepEqual(JSON.parse(run('JSON.stringify(state.design.buses[selectedBus].route)')),expected);
+   assert.equal(run('selectedChip'),anchor+1);assert.equal(run('validateDesign(state.design)'),true);insertions++;
+  }
+ }
+}
+assert.equal(insertions,1260);console.log('PASS all 1,260 route insertion contexts');
+
+run(`state.design=${JSON.stringify(data.DEFAULT_DESIGN)};state.design.buses[0].route=['A','T','E','M'];selectedBus=0;selectedChip=2;undo=[];busSelections=[null,null];`);
+run('mutate(()=>state.design.buses[0].departure=440);');assert.equal(run('insertionName()'),'다리 남단');
+run("action('bus',{id:'1'});action('stop',{id:'H'});action('bus',{id:'0'});");assert.equal(run('insertionName()'),'다리 남단');
+run('moveChip(2,1);');assert.equal(run('selectedChip'),1);assert.equal(run('insertionName()'),'다리 남단');
+run("action('remove',{index:'2'});");assert.equal(run('insertionName()'),'다리 남단');
+run("action('remove',{index:'1'});");assert.equal(run('insertionName()'),'아파트');
+run("action('undo');");assert.equal(run('insertionName()'),'다리 남단');
+run("action('stop',{id:'F'});");assert.deepEqual(JSON.parse(run('JSON.stringify(state.design.buses[0].route)')),['A','E','F','M']);
+run("action('bus',{id:'1'});action('undo');");assert.equal(run('selectedBus'),0);assert.equal(run('insertionName()'),'다리 남단');
+console.log('PASS cursor survives time changes, bus switch, reorder, delete and cross-bus undo');
+
+const legacy={...state,scenario:'morning-v3',attempts:[{...first,scenario:'morning-v3'}],reflections:['이전 답변','','']};
+storage.set('audit',JSON.stringify(legacy));run=harness();
+assert.equal(run('state.attempts.length'),0);assert.equal(run('state.previousRecords.length'),1);
+assert.equal(run('state.previousRecords[0].reflections[0]'),'이전 답변');
+assert.deepEqual(JSON.parse(run('JSON.stringify(state.previousRecords[0].attempts[0].results)')),first.results);
+assert.equal(completedProgress(legacy,'results').attempts,0);
+run=harness();assert.equal(run('state.previousRecords.length'),1);
+console.log('PASS previous-road records remain unchanged, separate, and are not duplicated on reload');

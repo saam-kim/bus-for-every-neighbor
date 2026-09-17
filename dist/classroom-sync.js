@@ -1,12 +1,13 @@
 import {summary} from './engine.js';
+import {SCENARIO} from './data.js';
 
 // Only completed runs belong in the teacher's results, never design forecasts.
 export function completedProgress(state, mode) {
-  const attempts = state.attempts || [];
+  const attempts = (state.attempts || []).filter(a => a.scenario === SCENARIO.id);
   const latest = attempts.at(-1);
   return {
     mode, attempts: attempts.length,
-    reflectionDone: (state.reflections || []).filter(x => x.trim()).length,
+    reflectionDone: state.scenario === SCENARIO.id ? (state.reflections || []).filter(x => x.trim()).length : 0,
     summary: latest ? summary(latest.results) : null,
     results: latest?.results || null,
     design: latest?.design || null,

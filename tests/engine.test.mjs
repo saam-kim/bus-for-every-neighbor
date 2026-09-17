@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {SCENARIO,STOPS,STOP,RESIDENTS,DEFAULT_DESIGN,BUS_STARTS} from '../dist/data.js';
+import {SCENARIO,STOPS,STOP,RESIDENTS,DEFAULT_DESIGN,BUS_STARTS,ROAD_NODES,ROADS} from '../dist/data.js';
 import {evaluate,summary,scheduleBus,busPosition,personPosition,resultFor,roadPath,validateDesign} from '../dist/engine.js';
 
 const copy=x=>structuredClone(x);
@@ -145,6 +145,29 @@ check('the bridge junction connects apartments without a transfer-center detour'
 
 check('shortest road paths use connected endpoints and edge totals',()=>{
  for(const a of STOPS)for(const b of STOPS){if(a.id===b.id)continue;const p=roadPath(a.id,b.id);assert.deepEqual(p.points[0],[a.x,a.y]);assert.deepEqual(p.points.at(-1),[b.x,b.y]);assert.equal(p.minutes,p.edges.reduce((t,e)=>t+e.minutes,0));}
+});
+
+check('all 56 stop pairs follow optimal continuous roads without hidden geometric U-turns',()=>{
+ const distances=Object.fromEntries(ROAD_NODES.map(a=>[a.id,Object.fromEntries(ROAD_NODES.map(b=>[b.id,a.id===b.id?0:Infinity]))]));
+ for(const e of ROADS){distances[e.a][e.b]=e.minutes;distances[e.b][e.a]=e.minutes;}
+ for(const k of ROAD_NODES)for(const a of ROAD_NODES)for(const b of ROAD_NODES)distances[a.id][b.id]=Math.min(distances[a.id][b.id],distances[a.id][k.id]+distances[k.id][b.id]);
+ for(const a of STOPS)for(const b of STOPS){if(a===b)continue;const p=roadPath(a.id,b.id);
+  assert.equal(p.minutes,distances[a.id][b.id]);
+  assert.equal(new Set(p.points.map(p=>p.join(','))).size,p.points.length,`${a.id} → ${b.id} doubles back over the same road point`);
+  for(let i=1;i<p.edges.length;i++)assert.deepEqual(p.edges[i-1].points.at(-1),p.edges[i].points[0]);
+ }
+});
+
+check('school, hospital and factory junctions avoid unnecessary stop detours',()=>{
+ for(const [from,to,minutes,excluded] of [['S','M',9,'N'],['T','F',7,'E'],['N','A',13,'T'],['E','F',9,'N'],['S','E',17,'M']]){
+  const p=roadPath(from,to);assert.equal(p.minutes,minutes);
+  assert.ok(p.edges.every(e=>e.from!==excluded&&e.to!==excluded));
+  const reverse=roadPath(to,from);assert.equal(reverse.minutes,minutes);assert.deepEqual(reverse.points,[...p.points].reverse());
+ }
+ const explicit=scheduleBus({route:['A','T','E','F'],departure:450},0);
+ assert.deepEqual(explicit.visits.slice(0,4).map(v=>v.stop),['A','T','E','F']);
+ assert.equal(explicit.visits[3].arr,476); // A deliberate stop at E must still be respected.
+ assert.ok(explicit.visits.every(v=>!['J','K','L','Q'].includes(v.stop)));
 });
 
 const designs=[
