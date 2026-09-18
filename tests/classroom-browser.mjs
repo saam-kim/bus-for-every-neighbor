@@ -18,6 +18,7 @@ const server=createServer((req,res)=>{
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const url=`http://127.0.0.1:${server.address().port}/`;
+async function changeSettings(page,departure){const bus=await page.locator('.bus-tab[aria-pressed="true"]').getAttribute('data-id');await page.locator('[data-action=settings]').click();await page.locator('#departure-'+bus).fill(departure);await page.locator('#operating-settings button[type=submit]').click();}
 let browser;
 try{
  browser=await chromium.launch({headless:true});
@@ -33,6 +34,17 @@ try{
  await student.locator('.classroom-lock').waitFor();
  await teacher.waitForFunction(()=>document.querySelector('.team-row:not(.header)')?.textContent.includes('아직 운행 전'));
  await teacher.locator('[data-action=start]').click();await student.locator('.modal .primary[data-action=close]').click();
+ const readDesign=()=>student.evaluate(()=>JSON.parse(localStorage.getItem(window.BUS_CLASSROOM.storageKey)).design);
+ const initialDesign=await readDesign();assert.equal(await student.locator('.route-editor input').count(),0);
+ await student.locator('[data-action=settings]').click();assert.equal(await student.locator('.settings-bus input').count(),2);
+ await student.locator('#departure-0').fill('06:59');await student.locator('#operating-settings button[type=submit]').click();assert.equal(await student.locator('.settings-modal').count(),1);assert.deepEqual(await readDesign(),initialDesign);
+ await student.locator('#departure-0').fill('07:20');await student.locator('input[name=lowBus][value="1"]').check();await student.getByRole('button',{name:'취소',exact:true}).click();assert.deepEqual(await readDesign(),initialDesign);
+ await student.locator('[data-action=settings]').click();await student.locator('#departure-0').fill('07:20');await student.locator('#departure-1').fill('07:35');await student.locator('input[name=lowBus][value="1"]').check();await student.evaluate(()=>document.fonts.ready);await student.screenshot({path:path.join(artifacts,'operating-settings-ipad.png')});
+ const panel=await student.locator('.settings-modal').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight}));assert.ok(panel.scroll<=panel.height+1);
+ await student.locator('#operating-settings button[type=submit]').click();assert.deepEqual((await readDesign()).buses.map(b=>b.departure),[440,455]);assert.equal((await readDesign()).lowBus,1);assert.match(await student.locator('.settings-button').innerText(),/07:20.*07:35.*저상 2호차/);
+ await student.reload();await student.locator('[data-action=settings]').click();assert.equal(await student.locator('#departure-0').inputValue(),'07:20');assert.equal(await student.locator('#departure-1').inputValue(),'07:35');assert.equal(await student.locator('input[name=lowBus][value="1"]').isChecked(),true);
+ await student.locator('#departure-0').fill('07:30');await student.locator('#departure-1').fill('07:30');await student.locator('input[name=lowBus][value="0"]').check();await student.locator('#operating-settings button[type=submit]').click();await student.locator('[data-action=undo]').click();assert.equal((await readDesign()).lowBus,1);await student.locator('[data-action=settings]').click();await student.locator('#departure-0').fill('07:30');await student.locator('#departure-1').fill('07:30');await student.locator('input[name=lowBus][value="0"]').check();await student.locator('#operating-settings button[type=submit]').click();
+ console.log('PASS separate settings: both departures; one low-floor choice; invalid time blocked; cancel; apply; undo; reload; iPad modal fits');
  if(process.env.ROUTE_EDIT_ONLY==='1'){
   const stop=id=>student.locator(`.stop[data-id=${id}] .stop-label`).click();
   const route=i=>student.evaluate(i=>JSON.parse(localStorage.getItem(window.BUS_CLASSROOM.storageKey)).design.buses[i].route,i);
@@ -57,7 +69,7 @@ try{
   assert.deepEqual(await route(0),['A','T','E','F','M','S','H','N']);
   assert.deepEqual(await route(1),['H','S','E','N','F']);
   await stop('E');
-  await student.locator('#departure').fill('07:20');await student.locator('#departure').dispatchEvent('change');
+  await changeSettings(student,'07:20');
   assert.match(await student.locator('.insertion-guide').count()?await student.locator('.insertion-guide').innerText():await student.locator('.route-tools').innerText(),/다리 남단|모든 정류장/);
   await student.locator('[data-action=move][data-dir="-1"]').click();
   assert.equal(await student.locator('.route-tools b').innerText(),'다리 남단');
@@ -107,7 +119,7 @@ try{
  assert.match(await teacher.locator('.teacher-reflections').innerText(),/민서가 학교/);
  await teacher.locator('.modal-x').click();
  await student.locator('[data-action=results]').last().click();await student.locator('[data-action=redesign]').click();
- await student.locator('#departure').fill('07:10');await student.locator('#departure').dispatchEvent('change');
+ await changeSettings(student,'07:10');
  await student.locator('.bottom-bar [data-action=run]').click();await student.locator('.bottom-bar [data-action=finish]').click();
  assert.equal(await student.locator('#attempt option').count(),2);
  await teacher.waitForFunction(()=>document.querySelector('.team-row:not(.header)')?.textContent.includes('2회'));
