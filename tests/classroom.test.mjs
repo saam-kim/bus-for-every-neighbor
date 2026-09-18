@@ -39,7 +39,7 @@ function harness(){
  vm.runInContext(fs.readFileSync(new URL('../dist/app.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,''),context);
  return expression=>vm.runInContext(expression,context);
 }
-let run=harness();run("state.introSeen=true;modal=null;action('run');");
+let run=harness();run("state.introSeen=true;state.purposeSeen=true;modal=null;action('run');");
 const priorRenders=renders;
 listeners['classroom-state']();
 assert.equal(run('playing'),true);assert.equal(renders,priorRenders);
