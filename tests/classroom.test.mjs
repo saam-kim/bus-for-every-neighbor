@@ -31,11 +31,11 @@ retry.enqueue({answer:'saved locally'});await retry.flush();failed=false;await r
 assert.deepEqual(status,[false,true]);
 console.log('PASS failed save retries and reports recovery');
 
-const listeners={},storage=new Map();let renders=0;
+const listeners={},storage=new Map(),counter={hidden:true,textContent:''};let renders=0;
 const app={set innerHTML(v){renders++;this.html=v;},get innerHTML(){return this.html;}};
 const room={code:'audit',teamName:'검토',control:{status:'active',phase:1},storageKey:'audit',sync(){}};
 function harness(){
- const context=vm.createContext({...data,...engine,window:{BUS_CLASSROOM:room,addEventListener(n,f){listeners[n]=f;}},document:{querySelector(s){return s==='#app'?app:null;},querySelectorAll(){return [];},activeElement:null},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},requestAnimationFrame(){},setTimeout(){},clearTimeout(){},AbortController,console});
+ const context=vm.createContext({...data,...engine,window:{BUS_CLASSROOM:room,addEventListener(n,f){listeners[n]=f;}},document:{querySelector(s){return s==='#app'?app:s==='#attempt-count'?counter:null;},querySelectorAll(){return [];},activeElement:null},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},requestAnimationFrame(){},setTimeout(){},clearTimeout(){},AbortController,console});
  vm.runInContext(fs.readFileSync(new URL('../dist/app.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,''),context);
  return expression=>vm.runInContext(expression,context);
 }
@@ -51,6 +51,7 @@ run("action('finish');");assert.equal(run('state.attempts.length'),1);
 run("action('redesign');action('run');playTime=600;updateAnimation();");
 assert.equal(run('state.attempts.length'),2);
 assert.equal(run('activityMode()'),'results','completed animation must not look like an active run to the teacher');
+assert.equal(counter.hidden,false);assert.equal(counter.textContent,'시도 기록 2');
 room.control={status:'paused',phase:1,message:'이전 활동 지시'};
 assert.ok(run('classroomChrome()').includes('선생님이 다시 시작할 때까지'));
 room.control={status:'active',phase:1};
