@@ -50,6 +50,10 @@ run("action('results');");assert.equal(run('state.attempts.length'),1);
 run("action('finish');");assert.equal(run('state.attempts.length'),1);
 run("action('redesign');action('run');playTime=600;updateAnimation();");
 assert.equal(run('state.attempts.length'),2);
+assert.equal(run('activityMode()'),'results','completed animation must not look like an active run to the teacher');
+room.control={status:'paused',phase:1,message:'이전 활동 지시'};
+assert.ok(run('classroomChrome()').includes('선생님이 다시 시작할 때까지'));
+room.control={status:'active',phase:1};
 run=harness();assert.equal(run('state.attempts.length'),2);
 console.log('PASS both result buttons, automatic completion, and reload preserve attempts without duplicates');
 
