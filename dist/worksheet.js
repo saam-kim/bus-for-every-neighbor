@@ -1,0 +1,13 @@
+// The resident sheet remains sourced from data.js; this page records reasoning,
+// not a second copy of the simulator's resident results.
+export function worksheetHTML(){return `<section class="print-sheet worksheet" aria-label="모둠 활동지">
+ <header class="print-sheet-head"><div><p>고등학교 통합사회 · 2인 1조</p><h1>이 버스는 누구를 지나치는가</h1><span>모둠 활동지 · 주민 정보표를 옆에 놓고 함께 작성하세요.</span></div><b class="sheet-number">02 / 활동지</b></header>
+ <div class="worksheet-identity"><span>학년·반 __________</span><span>모둠 __________</span><span>이름 ________________________</span></div>
+ <p class="worksheet-goal"><b>우리의 목표</b> 먼저 8명 모두 이동할 수 있게 연결하고, 그 안에서 지각하는 사람과 지각 시간을 줄여 봅시다.</p>
+ <section class="worksheet-step"><h2><b>1</b> 주민의 아침에서 시작하기 <small>첫 설계 전</small></h2><p>이동이 특히 어려울 것 같은 주민 한 명과 그 이유를 적으세요. 출발 시각·보행·차량 조건을 근거로 살펴보세요.</p><div class="writing-lines two-lines"><span>주민: ____________　이유:</span></div></section>
+ <section class="worksheet-step"><h2><b>2</b> 첫 운행에서 놓친 사람 확인하기 <small>첫 결과 확인</small></h2><div class="worksheet-counts">이동 가능 ____ / 8명　 ·　 이동 불가 ____명　 ·　 정시 ____명　 ·　 지각 ____명</div><table class="worksheet-table"><thead><tr><th scope="col">살펴볼 주민</th><th scope="col">이동 불가 또는 지각 시간</th><th scope="col">노선·시간표에서 찾은 이유</th></tr></thead><tbody><tr><td></td><td></td><td></td></tr><tr><td></td><td></td><td></td></tr></tbody></table></section>
+ <section class="worksheet-step"><h2><b>3</b> 바꿀 선택과 예상되는 영향 정하기 <small>역할을 바꿔 재설계</small></h2><p>누구의 어떤 어려움을 줄일까요? 노선·첫 출발 시각·저상버스 배치 중 무엇을 바꿀지 적으세요.</p><div class="writing-lines two-lines"><span>바꿀 내용과 이유:</span></div><div class="writing-lines one-line"><span>이 변화로 더 기다리거나 돌아갈 것 같은 주민과 이유:</span></div></section>
+ <section class="worksheet-step"><h2><b>4</b> 다시 운행하고 변화 비교하기 <small>첫 시도와 수정 시도</small></h2><div class="worksheet-counts">이동 가능 ____ / 8명　 ·　 이동 불가 ____명　 ·　 정시 ____명　 ·　 지각 ____명</div><table class="worksheet-table comparison"><thead><tr><th scope="col">비교할 변화</th><th scope="col">주민 이름</th><th scope="col">첫 시도 → 수정 시도 / 달라진 시간</th></tr></thead><tbody><tr><th scope="row">새롭게 이동 가능</th><td></td><td></td></tr><tr><th scope="row">더 빨리 도착</th><td></td><td></td></tr><tr><th scope="row">더 늦게 도착·이동 불가</th><td></td><td></td></tr></tbody></table><p class="worksheet-hint">해당하는 주민이 없으면 ‘없음’으로 적으세요. 평균보다 주민별 변화를 먼저 살펴봅니다.</p></section>
+ <section class="worksheet-step"><h2><b>5</b> 우리 모둠의 선택 설명하기 <small>최종 판단</small></h2><p>우리 설계에서 누가 얼마나 늦나요? 그 지각이 그 사람의 생활에 미칠 영향과, 그래도 이 노선을 선택한 이유를 적으세요.</p><div class="writing-lines two-lines"></div><p>정류장이 있다는 것과 실제로 목적지에 갈 수 있다는 것은 어떻게 다른가요? 주민 한 명의 사례로 설명하세요.</p><div class="writing-lines two-lines"></div></section>
+ <footer class="worksheet-concepts"><b>결과에서 개념으로</b> 사는 곳에 따른 이동의 차이 → 공간 불평등 · 실제로 이용할 수 있는 조건 → 실질적인 기회 · 두 버스의 배치와 그 이유 → 공공서비스 분배</footer>
+</section>`;}

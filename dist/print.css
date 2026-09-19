@@ -1,0 +1,25 @@
+/* One set = two separate A4 pages; grayscale remains legible. */
+.print-toolbar{max-width:210mm;margin:24px auto 0;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 20px;background:#fff;border:1px solid #d7e0eb;border-radius:12px;color:#29445f}
+.print-toolbar h2{font-size:17px;margin:0 0 6px;font-weight:700}.print-toolbar p{font-size:13px;line-height:1.6;color:#536981}.print-toolbar .print-actions{flex-shrink:0}.print-toolbar .portal-primary{font-size:14px}
+.print-mode .print-sheet{padding:10mm 12mm;box-sizing:border-box;min-height:297mm;font-family:Pretendard,'Malgun Gothic',sans-serif;letter-spacing:normal}
+.sheet-number{font-size:9pt;white-space:nowrap;margin-bottom:1mm;color:#50647c}
+.worksheet{font-family:LocalKorean,'Malgun Gothic',sans-serif;letter-spacing:normal}
+.worksheet .print-sheet-head{padding-bottom:3mm}.worksheet .print-sheet-head h1{font-size:19pt}.worksheet .print-sheet-head p{font-size:8pt}
+.worksheet-identity{display:flex;justify-content:space-between;gap:2mm;margin:3mm 0;font-size:9pt}
+.worksheet-goal{font-size:9pt;line-height:1.6;padding:2.5mm 3mm;border:1px solid #aebccc;background:#f5f7fa}.worksheet-goal b{margin-right:2mm}
+.worksheet-step{margin-top:2.5mm;break-inside:avoid}.worksheet-step h2{display:flex;align-items:baseline;gap:2mm;font-size:11pt;line-height:1.4;margin:0 0 1.5mm;color:#182c43}.worksheet-step h2>b{font-size:10pt}.worksheet-step h2 small{margin-left:auto;font-size:8pt;font-weight:400;color:#526075}
+.worksheet-step>p{font-size:8.6pt;line-height:1.55;margin:1.5mm 0;color:#293c51;word-break:keep-all}
+.writing-lines{position:relative;border-bottom:1px solid #b7c0ca;font-size:8.5pt;line-height:7mm;color:#35465b}.writing-lines.two-lines:after{content:'';position:absolute;left:0;right:0;top:7mm;border-bottom:1px solid #cbd2da}
+.writing-lines.two-lines{height:14mm}.writing-lines.one-line{height:7mm;margin-top:1mm}.writing-lines span{background:#fff;padding-right:2mm}
+.worksheet-counts{font-size:9pt;line-height:1.5;padding:1mm 0 1.5mm;color:#273d55}
+.worksheet .worksheet-table{table-layout:fixed;width:100%;border:1px solid #aeb9c7;font-size:8.5pt}.worksheet-table th,.worksheet-table td{border:1px solid #b9c3cf;padding:1.4mm 2mm;color:#273a50;line-height:1.4;white-space:normal}.worksheet-table thead th{background:#f0f2f5;font-size:8.2pt;font-weight:650}.worksheet-table th:first-child{width:24%}.worksheet-table th:nth-child(2){width:27%}.worksheet-table td{height:9mm}.worksheet-table.comparison th:first-child{width:29%}.worksheet-table.comparison th:nth-child(2){width:20%}.worksheet-table tbody th{background:#fff;font-size:8pt;font-weight:500}
+.worksheet-step .worksheet-hint{font-size:7.7pt;color:#526075;margin-top:1.5mm}
+.worksheet .worksheet-concepts{text-align:left;margin-top:2mm;padding-top:2.5mm;font-size:8pt;line-height:1.6;color:#394b60}.worksheet-concepts b{margin-right:2mm}
+@media(max-width:820px){.print-toolbar{margin:12px;flex-wrap:wrap}.print-toolbar .print-actions{margin-left:auto}.print-mode .print-sheet{margin:12px auto}}
+@media print{
+ @page{size:A4 portrait;margin:0}
+ .print-toolbar{display:none!important}
+ .print-mode .print-sheet{margin:0;width:210mm;height:auto;min-height:297mm;padding:10mm 12mm;box-shadow:none;overflow:visible;break-after:page;page-break-after:always}
+ .print-mode .print-sheet:last-child{break-after:auto;page-break-after:auto}
+ .worksheet-step,.print-resident{break-inside:avoid;page-break-inside:avoid}
+}
