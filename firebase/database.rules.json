@@ -2,10 +2,11 @@
   "rules": {
     "classes": {
       "$code": {
-        ".read": "auth != null",
-        ".write": "auth != null && ((!data.exists() && newData.child('teacherUid').val() === auth.uid) || data.child('teacherUid').val() === auth.uid)",
+        ".read": "auth != null && data.child('teacherUid').val() === auth.uid",
+        ".write": "auth != null && !data.exists() && newData.child('teacherUid').val() === auth.uid",
         "teams": {
           "$teamId": {
+            ".read": "auth != null && (auth.uid === $teamId || root.child('classes').child($code).child('teacherUid').val() === auth.uid)",
             ".write": "auth != null && (root.child('classes').child($code).child('teacherUid').val() === auth.uid || (!data.exists() && newData.child('uid').val() === auth.uid) || data.child('uid').val() === auth.uid)",
             ".validate": "newData.hasChildren(['uid','name','joinedAt']) && newData.child('uid').isString() && newData.child('uid').val() === $teamId && newData.child('name').isString() && newData.child('name').val().length <= 24"
           }
@@ -13,6 +14,8 @@
         "teacherUid": { ".validate": "newData.isString()" },
         "code": { ".validate": "newData.isString() && newData.val() === $code" },
         "control": {
+          ".read": "auth != null",
+          ".write": "auth != null && root.child('classes').child($code).child('teacherUid').val() === auth.uid",
           ".validate": "newData.hasChildren(['status','phase','phaseDuration']) && newData.child('phase').isNumber() && newData.child('phase').val() >= 0 && newData.child('phase').val() <= 6"
         }
       }

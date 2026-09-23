@@ -2,7 +2,7 @@ import {worksheetHTML} from './worksheet.js';
 import {completedProgress,createSyncQueue} from './classroom-sync.js';
 import {SCENARIO,LESSON,RESIDENTS,STOP,BUS_STARTS} from './data.js';
 import {evaluate,summary,time} from './engine.js';
-import {connectBackend,createClass,readClass,watchClass,updateControl,joinClass,updateTeam,backendMode} from './classroom.js';
+import {connectBackend,createClass,readClass,readStudentClass,watchClass,watchStudentClass,updateControl,joinClass,updateTeam,backendMode} from './classroom.js';
 
 const app=document.querySelector('#app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -39,8 +39,8 @@ function renderTeacherGuide(){dispose();clearInterval(dashboardTimer);shell(`<ma
 
 function renderCodeEntry(){shell(`<main class="join-page"><header class="join-head">${logo()}</header><form class="join-form solo" id="code-form"><p class="portal-kicker">학생용 입장</p><h1>수업 코드 입력</h1><p>선생님 화면에 표시된 6자리 숫자를 입력하세요.</p><label class="sr-only" for="class-code">수업 코드</label><input id="class-code" inputmode="numeric" autocomplete="off" pattern="[0-9]{6}" maxlength="6" required placeholder="6자리 수업 코드"><button class="portal-primary" type="submit">이 수업에 입장하기</button></form></main>`,'portal-mode');$('#code-form').addEventListener('submit',event=>{event.preventDefault();const code=$('#class-code').value.trim();if(/^\d{6}$/.test(code))location.hash=`join/${code}`;});}
 async function renderJoin(code){dispose();clearInterval(dashboardTimer);shell(`<main class="join-page"><header class="join-head">${logo()}<button class="portal-ghost" data-nav="">처음으로</button></header><section class="join-card"><div class="join-art"><img src="./assets/town-map.png" alt="강과 다리로 이어진 활동 속 가상 도시"><span>수업 코드 <b>${esc(code)}</b></span></div><div class="join-form"><p class="portal-kicker">학생용 입장</p><h1>우리 모둠으로 참여하기</h1><p>모둠 이름은 선생님 화면에서 진행 상황을 구분하는 데 사용됩니다.</p><label for="team-name">모둠 이름</label><input id="team-name" maxlength="24" autocomplete="off" placeholder="예: 다리놓는사람들"><button class="portal-primary" id="join-team" disabled>수업 확인 중…</button><p id="portal-notice" class="portal-notice">수업을 확인하고 있어요.</p></div></section></main>`,'portal-mode');
- try{const klass=await readClass(code);if(!klass){setNotice('수업 코드를 찾을 수 없습니다. 선생님 화면의 코드를 확인해 주세요.','error');$('#join-team').disabled=true;return;}if(klass.control?.status==='ended'){setNotice('이미 종료된 수업입니다.','error');$('#join-team').disabled=true;return;}const savedId=localStorage.getItem(`bus-team-${code}`);if(savedId&&klass.teams?.[savedId]){await startStudent(code,klass.teams[savedId],klass);return;}setNotice(klass.control?.status==='lobby'?'입장하면 선생님이 수업을 시작할 때까지 기다립니다.':`${phaseNames[klass.control?.phase||0]} 단계가 진행 중입니다.`);$('#team-name').focus();$('#join-team').disabled=false;$('#join-team').textContent='수업에 입장하기';}catch(e){setNotice(firebaseMessage(e),'error');return;}
- $('#join-team')?.addEventListener('click',async()=>{const name=$('#team-name').value.trim();if(!name){setNotice('모둠 이름을 입력해 주세요.','error');return;}const b=$('#join-team');b.disabled=true;b.textContent='입장 중…';try{const team=await joinClass(code,name);const klass=await readClass(code);await startStudent(code,team,klass);}catch(e){setNotice(firebaseMessage(e),'error');b.disabled=false;b.textContent='수업에 입장하기';}});
+ try{const klass=await readStudentClass(code);if(!klass){setNotice('수업 코드를 찾을 수 없습니다. 선생님 화면의 코드를 확인해 주세요.','error');$('#join-team').disabled=true;return;}if(klass.control?.status==='ended'){setNotice('이미 종료된 수업입니다.','error');$('#join-team').disabled=true;return;}const savedId=localStorage.getItem(`bus-team-${code}`);if(savedId&&klass.teams?.[savedId]){await startStudent(code,klass.teams[savedId],klass);return;}setNotice(klass.control?.status==='lobby'?'입장하면 선생님이 수업을 시작할 때까지 기다립니다.':`${phaseNames[klass.control?.phase||0]} 단계가 진행 중입니다.`);$('#team-name').focus();$('#join-team').disabled=false;$('#join-team').textContent='수업에 입장하기';}catch(e){setNotice(firebaseMessage(e),'error');return;}
+ $('#join-team')?.addEventListener('click',async()=>{const name=$('#team-name').value.trim();if(!name){setNotice('모둠 이름을 입력해 주세요.','error');return;}const b=$('#join-team');b.disabled=true;b.textContent='입장 중…';try{const team=await joinClass(code,name);const klass=await readStudentClass(code);await startStudent(code,team,klass);}catch(e){setNotice(firebaseMessage(e),'error');b.disabled=false;b.textContent='수업에 입장하기';}});
 }
 async function startStudent(code,team,klass){
  dispose();clearInterval(dashboardTimer);
@@ -51,7 +51,7 @@ async function startStudent(code,team,klass){
  const retry=()=>queue.flush();window.addEventListener('online',retry);
  let roomKey=JSON.stringify([klass.control,team.name]);
  document.body.className='student-class-mode';app.innerHTML='<div class="portal-loading">마을 지도를 불러오는 중…</div>';
- const stop=watchClass(code,(value,error)=>{
+ const stop=watchStudentClass(code,team.uid,(value,error)=>{
   const control=error||!value?{status:'paused',phase:0,message:'수업 연결을 확인하고 있습니다. 입력한 내용은 이 기기에 보관됩니다.'}:value.control;
   const name=value?.teams?.[team.uid]?.name||team.name,key=JSON.stringify([control,name]);
   if(key===roomKey)return;

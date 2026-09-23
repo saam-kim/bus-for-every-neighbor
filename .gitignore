@@ -5,3 +5,7 @@ artifacts/*.tar.gz
 
 .vercel
 .env*
+.dorms-check/
+
+# Local promotional materials; never publish with the app repository.
+/promo/
