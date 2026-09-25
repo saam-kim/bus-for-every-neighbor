@@ -38,7 +38,34 @@ export function watchClass(code,callback){let stop=()=>{},disposed=false;connect
 function studentView(value,teamId){if(!value)return null;const team=value.teams?.[teamId];return {...value,teams:team?{[teamId]:structuredClone(team)}:{}};}
 async function studentRequest(path,method='GET',value){const token=await within(currentUser.getIdToken(),12000),url=new URL(`${firebaseConfig.databaseURL}/${path}.json`);url.searchParams.set('auth',token);const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);try{const response=await fetch(url,{method,headers:value===undefined?undefined:{'Content-Type':'application/json'},body:value===undefined?undefined:JSON.stringify(value),signal:controller.signal,cache:'no-store'});if(response.status===401||response.status===403)throw new Error('이 모둠에 접근할 수 없습니다. 같은 브라우저에서 다시 입장해 주세요.');if(!response.ok)throw new Error(`수업 연결 요청이 실패했습니다 (HTTP ${response.status}).`);return method==='DELETE'?null:await response.json();}catch(error){if(error.name==='AbortError')throw connectionError();if(error instanceof TypeError)throw new Error('Firebase에 연결할 수 없습니다. 학교 네트워크에서 Firebase 접속이 허용되는지 확인해 주세요.');throw error;}finally{clearTimeout(timer);}}
 export async function readStudentClass(code){const {uid}=await connectBackend();if(!hasFirebase)return studentView(readDemo()[code]||null,uid);const [control,team]=await Promise.all([studentRequest(`classes/${code}/control`),studentRequest(`classes/${code}/teams/${uid}`)]);if(!control)return null;return {code,control,teams:team?{[uid]:team}:{}};}
-export function watchStudentClass(code,teamId,callback){let disposed=false,stopControl=()=>{},stopTeam=()=>{},control,team,controlReady=false;const emit=()=>{if(disposed||!controlReady)return;callback(control?{code,control,teams:team?{[teamId]:team}:{}}:null);};connectBackend().then(async({uid})=>{if(disposed)return;if(uid!==teamId){callback(null,new Error('현재 기기의 모둠 기록만 구독할 수 있습니다.'));return;}if(!hasFirebase){const send=()=>callback(studentView(readDemo()[code]||null,teamId));send();channel.addEventListener('message',send);window.addEventListener('storage',send);stopControl=()=>{channel?.removeEventListener('message',send);window.removeEventListener('storage',send);};return;}await ensureDatabase();if(disposed)return;stopControl=sdk.onValue(sdk.ref(db,`classes/${code}/control`),snap=>{control=snap.exists()?snap.val():null;controlReady=true;emit();},err=>callback(null,err));stopTeam=sdk.onValue(sdk.ref(db,`classes/${code}/teams/${teamId}`),snap=>{team=snap.exists()?snap.val():null;emit();},err=>callback(null,err));}).catch(error=>callback(null,error));return()=>{disposed=true;stopControl();stopTeam();};}
+export function watchStudentClass(code,teamId,callback,initialValue){
+ let disposed=false,stopControl=()=>{},stopTeam=()=>{},pollTimer,polling=false;
+ let control=initialValue?.control,team=initialValue?.teams?.[teamId],controlReady=Boolean(control);
+ const sameControl=(a,b)=>a===b||Boolean(a&&b&&Object.keys(a).length===Object.keys(b).length&&Object.keys(a).every(key=>a[key]===b[key]));
+ const emit=()=>{if(!disposed&&controlReady)callback(control?{code,control,teams:team?{[teamId]:team}:{}}:null);};
+ const pollControl=async()=>{
+  if(disposed||polling)return;
+  polling=true;
+  try{
+   const latest=await studentRequest(`classes/${code}/control`);
+   if(!disposed&&!sameControl(latest,control)){control=latest;controlReady=true;emit();}
+  }catch{/* Keep the last known state and retry after a temporary network failure. */}
+  finally{polling=false;}
+ };
+ connectBackend().then(async({uid})=>{
+  if(disposed)return;
+  if(uid!==teamId){callback(null,new Error('현재 기기의 모둠 기록만 구독할 수 있습니다.'));return;}
+  if(!hasFirebase){const send=()=>callback(studentView(readDemo()[code]||null,teamId));send();channel.addEventListener('message',send);window.addEventListener('storage',send);stopControl=()=>{channel?.removeEventListener('message',send);window.removeEventListener('storage',send);};return;}
+  // School networks can delay or block the streaming connection; keep control changes moving over HTTPS.
+  pollTimer=setInterval(pollControl,6000);
+  if(!controlReady)void pollControl();
+  await ensureDatabase();
+  if(disposed)return;
+  stopControl=sdk.onValue(sdk.ref(db,`classes/${code}/control`),snap=>{const latest=snap.exists()?snap.val():null;if(!sameControl(latest,control)){control=latest;controlReady=true;emit();}},()=>{void pollControl();});
+  stopTeam=sdk.onValue(sdk.ref(db,`classes/${code}/teams/${teamId}`),snap=>{team=snap.exists()?snap.val():null;emit();},()=>{void pollControl();});
+ }).catch(()=>{void pollControl();});
+ return()=>{disposed=true;clearInterval(pollTimer);stopControl();stopTeam();};
+}
 function initialClass(code,uid){return {code,teacherUid:uid,createdAt:now(),control:{status:'lobby',phase:0,phaseDuration:5,phaseStartedAt:now(),pausedAt:0,message:'주민 한 사람의 아침부터 살펴보세요.'},teams:{}};}
 async function createRemoteClass(value){
  const token=await within(currentUser.getIdToken(),12000);

@@ -60,7 +60,7 @@ async function startStudent(code,team,klass){
   if(key===roomKey)return;
   roomKey=key;window.BUS_CLASSROOM.control=control;window.BUS_CLASSROOM.teamName=name;
   window.dispatchEvent(new CustomEvent('classroom-state'));
- });
+ },klass);
  dispose=()=>{stop();window.removeEventListener('online',retry);};
  await import('./app.js');
 }
