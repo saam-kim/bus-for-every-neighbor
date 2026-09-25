@@ -9,6 +9,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const phaseNames=LESSON.map(x=>x[0]);
 const route=()=>location.hash.replace(/^#\/?/,'').split('?')[0].split('/').filter(Boolean);
 let dispose=()=>{},dashboardTimer,latestClass,currentCode,qrOpen=false,detailTeam=null,endOpen=false,busy=false;
+window.addEventListener('class-control-saved',event=>{const {code,control}=event.detail;if(latestClass?.code===code)renderTeacher({...latestClass,control});});
 
 function shell(content,kind=''){document.body.className=kind;app.innerHTML=content;bindCommon();}
 function logo(){return `<div class="portal-brand"><span class="portal-bus"><svg viewBox="0 0 32 40" aria-hidden="true"><rect x="3" y="1" width="26" height="34" rx="7" fill="currentColor"/><rect x="7" y="9" width="18" height="13" rx="2" fill="white"/><path d="M11 5h10" stroke="white" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="28" r="2" fill="white"/><circle cx="23" cy="28" r="2" fill="white"/><path d="M7 33v4m18-4v4" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg></span><div><b>이 버스는 누구를 지나치는가</b><small>고등학교 통합사회 · 노선 설계 활동</small></div></div>`;}
