@@ -22,6 +22,7 @@ async function initializeBackend(){
   import(`https://www.gstatic.com/firebasejs/${version}/firebase-database.js`)
  ]),15000);
  sdk={...appMod,...authMod,...dbMod};const app=sdk.getApps().length?sdk.getApp():sdk.initializeApp(firebaseConfig);auth=sdk.getAuth(app);db=sdk.getDatabase(app);
+ await within(auth.authStateReady(),12000);
  let cred=auth.currentUser?{user:auth.currentUser}:null;
  for(let attempt=0;!cred&&attempt<2;attempt++){
   try{cred=await within(sdk.signInAnonymously(auth),15000);}catch(error){if(attempt===1||!String(error?.code).includes('network-request-failed'))throw error;await wait(500);}
