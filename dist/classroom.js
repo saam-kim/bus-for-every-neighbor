@@ -3,7 +3,7 @@ import {firebaseConfig} from './firebase-config.js';
 const DEMO_KEY='bus-classrooms-demo-v1';
 const hasFirebase=Boolean(firebaseConfig?.apiKey&&firebaseConfig?.databaseURL&&firebaseConfig?.projectId);
 let sdk,auth,db,currentUser,channel,connecting,dbLoading;
-const FIREBASE_VERSION='12.19.0';
+const FIREBASE_ASSETS='./vendor/firebase-12.19.0';
 
 const now=()=>Date.now();
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -17,8 +17,8 @@ async function initializeBackend(){
  if(currentUser)return {uid:currentUser.uid,isDemo:!hasFirebase};
  if(!hasFirebase){currentUser={uid:demoUid()};channel=new BroadcastChannel('bus-classrooms-demo');return {uid:currentUser.uid,isDemo:true};}
  const [appMod,authMod]=await within(Promise.all([
-  import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-app.js`),
-  import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-auth.js`)
+  import(`${FIREBASE_ASSETS}/firebase-app.js`),
+  import(`${FIREBASE_ASSETS}/firebase-auth.js`)
  ]),15000);
  sdk={...appMod,...authMod};const app=sdk.getApps().length?sdk.getApp():sdk.initializeApp(firebaseConfig);auth=sdk.getAuth(app);
  await within(auth.authStateReady(),12000);
@@ -30,11 +30,31 @@ async function initializeBackend(){
  return {uid:currentUser.uid,isDemo:false};
 }
 export function connectBackend(){if(currentUser)return Promise.resolve({uid:currentUser.uid,isDemo:!hasFirebase});if(!connecting)connecting=initializeBackend().finally(()=>{connecting=null;});return connecting;}
-function ensureDatabase(){if(db)return Promise.resolve(db);if(!dbLoading)dbLoading=within(import(`https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}/firebase-database.js`),15000).then(mod=>{sdk={...sdk,...mod};db=sdk.getDatabase(sdk.getApp());return db;}).finally(()=>{dbLoading=null;});return dbLoading;}
+function ensureDatabase(){if(db)return Promise.resolve(db);if(!dbLoading)dbLoading=within(import(`${FIREBASE_ASSETS}/firebase-database.js`),15000).then(mod=>{sdk={...sdk,...mod};db=sdk.getDatabase(sdk.getApp());return db;}).finally(()=>{dbLoading=null;});return dbLoading;}
 
 async function demoMutate(code,fn){const all=readDemo(),value=structuredClone(all[code]||null),next=fn(value);if(next===undefined)delete all[code];else all[code]=next;writeDemo(all);return next;}
 export async function readClass(code){await connectBackend();if(!hasFirebase)return structuredClone(readDemo()[code]||null);const token=await within(currentUser.getIdToken(),12000),url=new URL(`${firebaseConfig.databaseURL}/classes/${code}.json`);url.searchParams.set('auth',token);const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);try{const response=await fetch(url,{signal:controller.signal,cache:'no-store'});if(response.status===401||response.status===403)throw new Error('이 수업을 읽을 권한이 없습니다. 수업을 만든 브라우저에서 열어 주세요.');if(!response.ok)throw new Error(`수업을 불러오지 못했습니다 (HTTP ${response.status}).`);return await response.json();}catch(error){if(error.name==='AbortError')throw connectionError();if(error instanceof TypeError)throw new Error('Firebase에 연결할 수 없습니다. 학교 네트워크에서 Firebase 접속이 허용되는지 확인해 주세요.');throw error;}finally{clearTimeout(timer);}}
-export function watchClass(code,callback){let stop=()=>{},disposed=false;connectBackend().then(async()=>{if(disposed)return;if(!hasFirebase){const send=()=>callback(structuredClone(readDemo()[code]||null));send();channel.addEventListener('message',send);window.addEventListener('storage',send);stop=()=>{channel?.removeEventListener('message',send);window.removeEventListener('storage',send);};return;}await ensureDatabase();if(disposed)return;stop=sdk.onValue(sdk.ref(db,`classes/${code}`),snap=>callback(snap.exists()?snap.val():null),err=>callback(null,err));}).catch(error=>callback(null,error));return()=>{disposed=true;stop();};}
+export function watchClass(code,callback){
+ let stop=()=>{},disposed=false,fallbackTimer,pollTimer,polling=false,live=false,lastValue;
+ const emit=value=>{if(disposed)return;const serialized=JSON.stringify(value);if(serialized!==lastValue){lastValue=serialized;callback(value);}};
+ const poll=async()=>{
+  if(disposed||polling)return;
+  polling=true;
+  try{const value=await readClass(code);if(!live)emit(value);}catch{/* Keep the dashboard visible and retry after a temporary network failure. */}
+  finally{polling=false;}
+ };
+ const stopFallback=()=>{clearTimeout(fallbackTimer);clearInterval(pollTimer);pollTimer=null;};
+ const startFallback=()=>{if(disposed||pollTimer)return;void poll();pollTimer=setInterval(poll,10000);};
+ connectBackend().then(async()=>{
+  if(disposed)return;
+  if(!hasFirebase){const send=()=>callback(structuredClone(readDemo()[code]||null));send();channel.addEventListener('message',send);window.addEventListener('storage',send);stop=()=>{channel?.removeEventListener('message',send);window.removeEventListener('storage',send);};return;}
+  fallbackTimer=setTimeout(startFallback,6000);
+  await ensureDatabase();
+  if(disposed)return;
+  stop=sdk.onValue(sdk.ref(db,`classes/${code}`),snap=>{live=true;stopFallback();emit(snap.exists()?snap.val():null);},()=>{live=false;startFallback();});
+ }).catch(startFallback);
+ return()=>{disposed=true;stopFallback();stop();};
+}
 function studentView(value,teamId){if(!value)return null;const team=value.teams?.[teamId];return {...value,teams:team?{[teamId]:structuredClone(team)}:{}};}
 async function studentRequest(path,method='GET',value){const token=await within(currentUser.getIdToken(),12000),url=new URL(`${firebaseConfig.databaseURL}/${path}.json`);url.searchParams.set('auth',token);const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);try{const response=await fetch(url,{method,headers:value===undefined?undefined:{'Content-Type':'application/json'},body:value===undefined?undefined:JSON.stringify(value),signal:controller.signal,cache:'no-store'});if(response.status===401||response.status===403)throw new Error('이 모둠에 접근할 수 없습니다. 같은 브라우저에서 다시 입장해 주세요.');if(!response.ok)throw new Error(`수업 연결 요청이 실패했습니다 (HTTP ${response.status}).`);return method==='DELETE'?null:await response.json();}catch(error){if(error.name==='AbortError')throw connectionError();if(error instanceof TypeError)throw new Error('Firebase에 연결할 수 없습니다. 학교 네트워크에서 Firebase 접속이 허용되는지 확인해 주세요.');throw error;}finally{clearTimeout(timer);}}
 export async function readStudentClass(code){const {uid}=await connectBackend();if(!hasFirebase)return studentView(readDemo()[code]||null,uid);const [control,team]=await Promise.all([studentRequest(`classes/${code}/control`),studentRequest(`classes/${code}/teams/${uid}`)]);if(!control)return null;return {code,control,teams:team?{[uid]:team}:{}};}

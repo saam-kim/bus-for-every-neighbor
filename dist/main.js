@@ -9,6 +9,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const phaseNames=LESSON.map(x=>x[0]);
 const route=()=>location.hash.replace(/^#\/?/,'').split('?')[0].split('/').filter(Boolean);
 let dispose=()=>{},dashboardTimer,latestClass,currentCode,qrOpen=false,detailTeam=null,endOpen=false,busy=false;
+const qrDataByCode=new Map();
 window.addEventListener('class-control-saved',event=>{const {code,control}=event.detail;if(latestClass?.code===code)renderTeacher({...latestClass,control});});
 
 function shell(content,kind=''){document.body.className=kind;app.innerHTML=content;bindCommon();}
@@ -77,7 +78,22 @@ function stagePrompt(i){return ['인쇄 자료에서 주민의 출발·도착·�
 function teacherQuestion(i){return ['출발 시각과 보행 조건이 서로 다른 주민은 누구인가요?','이 노선에서 가장 오래 기다릴 사람은 누구일까요?','예상과 실제 결과가 달랐던 주민은 누구인가요?','정류장은 있는데 이동하지 못한 주민이 있나요?','새 연결로 왕복 시간이 얼마나 늘었나요?','새로 이동 가능해진 사람과 더 오래 걸린 사람은 누구인가요?','정류장의 존재와 실질적인 이동 기회는 어떻게 다른가요?'][i];}
 function activeAgo(t){if(!t)return '접속 기록 없음';const d=Math.max(0,Math.floor((Date.now()-t)/1000));return d<20?'지금 접속':d<60?`${d}초 전`:d<3600?`${Math.floor(d/60)}분 전`:'오래 전';}
 function modeLabel(m){return ({waiting:'입장 대기',design:'노선 설계',run:'운행 중',results:'결과 비교',reflection:'생각 정리',paused:'수업 일시정지',ended:'수업 종료'}[m]||'활동 중');}
-function qrModal(k){const link=`${location.origin}${location.pathname}#/join/${k.code}`,entry=`${location.origin}${location.pathname}#join`,src=`https://api.qrserver.com/v1/create-qr-code/?size=420x420&margin=14&data=${encodeURIComponent(link)}`;return `<div class="portal-modal-shade"><section class="qr-modal" role="dialog" aria-modal="true" aria-labelledby="qr-title"><button class="modal-x" data-action="close-modal" aria-label="닫기">×</button><header class="qr-heading"><p class="portal-kicker">우리 반 수업에 참여하기</p><h2 id="qr-title">학생 입장 QR</h2><p>아이패드 카메라로 스캔한 뒤 모둠 이름을 입력하세요.</p></header><div class="qr-content"><img src="${src}" alt="수업 코드 ${k.code} 학생 입장 QR 코드"><div class="qr-access"><div class="big-code"><small>수업 코드</small><b>${k.code}</b></div><div class="access-address"><small>QR 인식이 어려우면 아래 주소로 접속</small><strong>${esc(entry)}</strong><small>접속 후 위의 6자리 수업 코드를 입력하세요.</small></div><button class="copy-address" data-action="copy-link">접속 주소 복사</button><p class="qr-pair-note">2인 1조 · 모둠당 기기 한 대</p></div></div></section></div>`;}
+function qrModal(k){const entry=`${location.origin}${location.pathname}#join`;return `<div class="portal-modal-shade"><section class="qr-modal" role="dialog" aria-modal="true" aria-labelledby="qr-title"><button class="modal-x" data-action="close-modal" aria-label="닫기">×</button><header class="qr-heading"><p class="portal-kicker">우리 반 수업에 참여하기</p><h2 id="qr-title">학생 입장 QR</h2><p>아이패드 카메라로 스캔한 뒤 모둠 이름을 입력하세요.</p></header><div class="qr-content"><img data-code="${k.code}" alt="수업 코드 ${k.code} 학생 입장 QR 코드"><div class="qr-access"><div class="big-code"><small>수업 코드</small><b>${k.code}</b></div><div class="access-address"><small>QR 인식이 어려우면 아래 주소로 접속</small><strong>${esc(entry)}</strong><small>접속 후 위의 6자리 수업 코드를 입력하세요.</small></div><button class="copy-address" data-action="copy-link">접속 주소 복사</button><p class="qr-pair-note">2인 1조 · 모둠당 기기 한 대</p></div></div></section></div>`;}
+async function fillQr(k){
+ const image=$('.qr-content>img');
+ if(!image||image.dataset.code!==k.code||image.hasAttribute('src'))return;
+ try{
+  let src=qrDataByCode.get(k.code);
+  if(!src){
+   const {default:qrcode}=await import('./vendor/qrcode-generator/qrcode.js');
+   const qr=qrcode(0,'M');qr.addData(`${location.origin}${location.pathname}#/join/${k.code}`);qr.make();
+   src=qr.createDataURL(12,20);qrDataByCode.set(k.code,src);
+  }
+  if(image.isConnected)image.src=src;
+ }catch{
+  if(image.isConnected){const message=document.createElement('p');message.className='qr-fallback';message.textContent='QR을 표시하지 못했습니다. 아래 접속 주소와 수업 코드를 이용해 주세요.';image.replaceWith(message);}
+ }
+}
 function resultLabel(r){return !r||r.arrival==null?'이동 불가':`${time(r.arrival)} · ${r.status==='late'?'지각':'정시'} · ${r.duration}분`;}
 function teacherChange(first,last){if(first.arrival==null)return last.arrival==null?'여전히 이동 불가':'새롭게 이동 가능';if(last.arrival==null)return '이동 가능 → 불가';const diff=last.duration-first.duration;return diff>0?`${diff}분 더 걸림`:diff<0?`${-diff}분 줄어듦`:'이동 시간 같음';}
 function teamModal(k,id){
@@ -112,6 +128,7 @@ function renderTeacher(k){
   if(modal)app.insertAdjacentHTML('beforeend',modal);
  }
  if($('.team-modal'))$('.team-modal').scrollTop=modalScroll;
+ if(qrOpen)void fillQr(k);
  bindTeacher(k);
  document.querySelectorAll('[data-action="print"]').forEach(el=>el.onclick=()=>window.open(`${location.origin}${location.pathname}#/print/residents?auto=1`,'_blank','noopener'));
  clearInterval(dashboardTimer);dashboardTimer=setInterval(()=>{const el=$('#teacher-timer');if(el)el.textContent=timeDisplay(remaining(latestClass));},1000);
